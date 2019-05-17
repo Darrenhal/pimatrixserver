@@ -35,7 +35,7 @@ public class SnakeController implements Runnable{
 			}
 			
 			try {
-				Thread.sleep(500);
+				Thread.sleep(700);
 			} catch (InterruptedException e) {}
 		}
 	}
@@ -57,21 +57,21 @@ public class SnakeController implements Runnable{
 		}
 		
 		if (modifier == 3 && left != true) {
-			left = true;
+			right = true;
 			up = false;
 			down = false;
 		}
 		
 		if (modifier == 4 && down != true) {
-			left = true;
-			up = false;
-			down = false;
+			up = true;
+			left = false;
+			right = false;
 		}
 		
 		if (modifier == 5 && up != true) {
-			left = true;
-			up = false;
-			down = false;
+			down = true;
+			left = false;
+			right = false;
 		}
 		
 	}
@@ -126,10 +126,10 @@ public class SnakeController implements Runnable{
 			x[0] += 1;
 		}
 		if (up) {
-			y[0] -= 1;
+			y[0] += 1;
 		}
 		if (down) {
-			y[0] += 1;
+			y[0] -= 1;
 		}
 	}
 	

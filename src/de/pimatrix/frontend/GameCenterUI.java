@@ -3,15 +3,12 @@ package de.pimatrix.frontend;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-
 import com.fazecast.jSerialComm.SerialPort;
-
 import de.pimatrix.backend.NetworkController;
 
 public class GameCenterUI extends JFrame{

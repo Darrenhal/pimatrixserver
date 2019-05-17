@@ -3,7 +3,6 @@ package de.pimatrix.backend;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import de.pimatrix.frontend.GameCenterUI;
 import de.pimatrix.games.pacman.PacManController;
@@ -218,7 +217,7 @@ public class ClientThread implements Runnable {
 	public static void sendToSerialPort(Matrix matrix) {
 		System.out.println("Prompt To Matrix");
 		try {
-			Socket socket = new Socket("127.0.0.1", 36000);
+			Socket socket = new Socket("127.0.0.1", 62000);
 			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
 			out.writeObject(matrix);
 			out.close();

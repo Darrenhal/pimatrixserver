@@ -24,15 +24,15 @@ public class SerialThread implements Runnable {
 	public void run() {
 		//Zuweisen der seriellen Ports
 		arduino1 = SerialPort.getCommPort("COM5");
-//		arduino2 = SerialPort.getCommPort("ttyUSB_ArduLeft");
+		arduino2 = SerialPort.getCommPort("COM6");
 		
 		//setzen der Timeouts für die Kommunikation mit den Arduinos
 		arduino1.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-//		arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+		arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
 		arduino1.setBaudRate(115200);
-//		arduino2.setBaudRate(115200);
+		arduino2.setBaudRate(115200);
 		arduino1.openPort();
-//		arduino2.openPort();
+		arduino2.openPort();
 
 		System.out.println("Comm Ports set");
 
@@ -44,30 +44,14 @@ public class SerialThread implements Runnable {
 		} catch (IOException e) {}
 		
 		PrintWriter outToArduino1 = null;
-//		PrintWriter outToArduino2 = null;
+		PrintWriter outToArduino2 = null;
 		
 		if (arduino1.isOpen()) {
 			System.out.println("Getting Output stream");
 			outToArduino1 = new PrintWriter(arduino1.getOutputStream());
-//			outToArduino2 = new PrintWriter(arduino2.getOutputStream());
+			outToArduino2 = new PrintWriter(arduino2.getOutputStream());
 			System.out.println("Got outputstream");
 		}
-
-		System.out.println("Setting Red Matrix");
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix.length; j++) {
-				matrix[i][j][0] = 255;
-				matrix[i][j][1] = 0;
-				matrix[i][j][2] = 0;
-			}
-		}
-		
-		System.out.println("Sending Red Matrix");
-		outToArduino1.print(matrix);
-//		outToArduino2.print(matrix);
-		System.out.println("sent red matrix");
-		
-//		arduino2.closePort();
 		
 		while (true) {
 			try {
@@ -79,13 +63,13 @@ public class SerialThread implements Runnable {
 			waitForMatrix();
 			splitMatrix();
 			
-//			arduino1.openPort();
+			arduino1.openPort();
 			arduino2.openPort();
 			
 			outToArduino1.print(matrixRight);
 			outToArduino1.flush();
-//			outToArduino2.print(matrixLeft);
-//			outToArduino2.flush();
+			outToArduino2.print(matrixLeft);
+			outToArduino2.flush();
 			System.out.println("printed to Arduinos");
 		}
 //		while (true) {
@@ -113,14 +97,14 @@ public class SerialThread implements Runnable {
 	private void splitMatrix() {
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix.length; j++) {
-				if (i < 6) {
+				if (i <= 6) {
 					matrixRight[i][j][0] = matrix[i][j][0];
 					matrixRight[i][j][1] = matrix[i][j][1];
 					matrixRight[i][j][2] = matrix[i][j][2];
 				} else {
-					matrixLeft[i][j][0] = matrix[i][j][0];
-					matrixLeft[i][j][1] = matrix[i][j][1];
-					matrixLeft[i][j][2] = matrix[i][j][2];
+					matrixLeft[i - 7][j][0] = matrix[i][j][0];
+					matrixLeft[i - 7][j][1] = matrix[i][j][1];
+					matrixLeft[i - 7][j][2] = matrix[i][j][2];
 				}
 			}
 		}
