@@ -23,16 +23,16 @@ public class SerialThread implements Runnable {
 	@Override
 	public void run() {
 		//Zuweisen der seriellen Ports
-		arduino1 = SerialPort.getCommPort("ttyUSB_ArduRight");
-		arduino2 = SerialPort.getCommPort("ttyUSB_ArduLeft");
+		arduino1 = SerialPort.getCommPort("COM5");
+//		arduino2 = SerialPort.getCommPort("ttyUSB_ArduLeft");
 		
 		//setzen der Timeouts für die Kommunikation mit den Arduinos
 		arduino1.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-		arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+//		arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
 		arduino1.setBaudRate(115200);
-		arduino2.setBaudRate(115200);
+//		arduino2.setBaudRate(115200);
 		arduino1.openPort();
-		arduino2.openPort();
+//		arduino2.openPort();
 
 		System.out.println("Comm Ports set");
 
@@ -40,16 +40,16 @@ public class SerialThread implements Runnable {
 		localHost = null;
 		matrixData = new Matrix(matrix);
 		try {
-			localHost = new Socket("127.0.0.1", 62000); //erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende Matrix vom ClientThread 
+			ss = new ServerSocket(62000); //erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende Matrix vom ClientThread 
 		} catch (IOException e) {}
 		
 		PrintWriter outToArduino1 = null;
-		PrintWriter outToArduino2 = null;
+//		PrintWriter outToArduino2 = null;
 		
-		if (arduino2.isOpen()) {
+		if (arduino1.isOpen()) {
 			System.out.println("Getting Output stream");
 			outToArduino1 = new PrintWriter(arduino1.getOutputStream());
-			outToArduino2 = new PrintWriter(arduino2.getOutputStream());
+//			outToArduino2 = new PrintWriter(arduino2.getOutputStream());
 			System.out.println("Got outputstream");
 		}
 
@@ -63,11 +63,11 @@ public class SerialThread implements Runnable {
 		}
 		
 		System.out.println("Sending Red Matrix");
-//		outToArduino1.print(matrix);
-		outToArduino2.print(matrix);
+		outToArduino1.print(matrix);
+//		outToArduino2.print(matrix);
 		System.out.println("sent red matrix");
 		
-		arduino2.closePort();
+//		arduino2.closePort();
 		
 		while (true) {
 			try {
@@ -84,8 +84,8 @@ public class SerialThread implements Runnable {
 			
 			outToArduino1.print(matrixRight);
 			outToArduino1.flush();
-			outToArduino2.print(matrixLeft);
-			outToArduino2.flush();
+//			outToArduino2.print(matrixLeft);
+//			outToArduino2.flush();
 			System.out.println("printed to Arduinos");
 		}
 //		while (true) {
