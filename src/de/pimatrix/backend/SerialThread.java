@@ -11,22 +11,24 @@ import com.fazecast.jSerialComm.SerialPort;
 public class SerialThread implements Runnable {
 
 	public static SerialPort arduino1, arduino2;
-	private int[][][] matrix = new int[14][14][3];
-	
-	private int[][][] matrixLeft = new int[7][14][3];
-	private int[][][] matrixRight = new int[7][14][3];
-	
+	private short[][][] matrix = new short[14][14][3];
+
+	private short[][][] matrixLeft = new short[7][14][3];
+	private String matrixTranslationRight = "";
+	private short[][][] matrixRight = new short[7][14][3];
+	private String matrixTranslationLeft = "";
+
 	private Socket localHost;
 	private Matrix matrixData;
 	private ObjectInputStream in;
 
 	@Override
 	public void run() {
-		//Zuweisen der seriellen Ports
+		// Zuweisen der seriellen Ports
 		arduino1 = SerialPort.getCommPort("COM5");
 		arduino2 = SerialPort.getCommPort("COM6");
-		
-		//setzen der Timeouts für die Kommunikation mit den Arduinos
+
+		// setzen der Timeouts für die Kommunikation mit den Arduinos
 		arduino1.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
 		arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
 		arduino1.setBaudRate(115200);
@@ -40,19 +42,21 @@ public class SerialThread implements Runnable {
 		localHost = null;
 		matrixData = new Matrix(matrix);
 		try {
-			ss = new ServerSocket(62000); //erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende Matrix vom ClientThread 
-		} catch (IOException e) {}
-		
+			ss = new ServerSocket(62000); // erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende
+											// Matrix vom ClientThread
+		} catch (IOException e) {
+		}
+
 		PrintWriter outToArduino1 = null;
 		PrintWriter outToArduino2 = null;
-		
+
 		if (arduino1.isOpen()) {
 			System.out.println("Getting Output stream");
 			outToArduino1 = new PrintWriter(arduino1.getOutputStream());
 			outToArduino2 = new PrintWriter(arduino2.getOutputStream());
 			System.out.println("Got outputstream");
 		}
-		
+
 		while (true) {
 			try {
 				localHost = ss.accept();
@@ -61,15 +65,33 @@ public class SerialThread implements Runnable {
 			}
 			initializeInputStream();
 			waitForMatrix();
-			splitMatrix();
-			
+			translateMatrix();
+
 			arduino1.openPort();
 			arduino2.openPort();
-			
-			outToArduino1.print(matrixRight);
+
+//			for (int i = 0; i < 7; i++) {
+//				for (int j = 0; j < 14; j++) {
+//					for (int j2 = 0; j2 < 3; j2++) {
+			System.out.println("Right: " + matrixTranslationRight);
+			outToArduino1.print(matrixTranslationRight);
 			outToArduino1.flush();
-			outToArduino2.print(matrixLeft);
+//					}
+//				}
+//			}
+//			
+//			for (int i = 0; i < 7; i++) {
+//				for (int j = 0; j < 14; j++) {
+//					for (int j2 = 0; j2 < 3; j2++) {
+			System.out.println("Left: " + matrixTranslationRight);
+			outToArduino2.print(matrixTranslationLeft);
 			outToArduino2.flush();
+//					}
+//				}
+//			}	
+			
+			matrixTranslationRight = matrixTranslationLeft = "";
+			
 			System.out.println("printed to Arduinos");
 		}
 //		while (true) {
@@ -93,7 +115,24 @@ public class SerialThread implements Runnable {
 
 //		}
 	}
-	
+
+	private void translateMatrix() {
+		for (int i = 0; i < matrix.length; i++) {
+			for (int j = 0; j < matrix.length; j++) {
+				if (i <= 6) {
+					matrixTranslationRight += (char) matrix[i][j][0];
+					matrixTranslationRight += (char) matrix[i][j][1];
+					matrixTranslationRight += (char) matrix[i][j][2];
+					System.out.println(matrixTranslationRight);
+				} else {
+					matrixTranslationLeft += (char) matrix[i][j][0];
+					matrixTranslationLeft += (char) matrix[i][j][1];
+					matrixTranslationLeft += (char) matrix[i][j][2];
+				}
+			}
+		}
+	}
+
 	private void splitMatrix() {
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix.length; j++) {
@@ -131,8 +170,8 @@ public class SerialThread implements Runnable {
 
 		this.matrix = matrixData.matrix;
 	}
-	
-	public void setMatrix(int[][][] pixelIdentifier) {
+
+	public void setMatrix(short[][][] pixelIdentifier) {
 		matrix = pixelIdentifier;
 	}
 }

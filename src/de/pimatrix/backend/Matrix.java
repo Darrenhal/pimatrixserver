@@ -5,9 +5,9 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class Matrix implements Serializable{
 	
-	public int[][][] matrix;
+	public short[][][] matrix;
 	
-	public Matrix(int[][][] matrix) {
+	public Matrix(short[][][] matrix) {
 		this.matrix = matrix;
 	}
 }

@@ -11,11 +11,11 @@ public class SnakeController implements Runnable{
 	private boolean left = false, right = true, up = false, down = false;
 	private boolean foodAvailable = false;
 	
-	private final int x[] = new int[196];
-	private final int y[] = new int[196];
+	private final short x[] = new short[196];
+	private final short y[] = new short[196];
 			
-	private int length = 3;
-	private int[] apple = new int[5];
+	private short length = 3;
+	private short[] apple = new short[5];
 	
 	JOptionPane pane = new JOptionPane();
 	
@@ -78,10 +78,10 @@ public class SnakeController implements Runnable{
 	
 	private void locateFood() {	
 		Random random = new Random();
-		int randomPos = random.nextInt(13);
+		short randomPos = (short) random.nextInt(13);
 		apple[0] = randomPos;
 
-		randomPos = random.nextInt(13);
+		randomPos = (short) random.nextInt(13);
 		apple[1] = randomPos;
 		
 		apple[2] = 255;
@@ -135,7 +135,7 @@ public class SnakeController implements Runnable{
 	
 	private void initGame() {
 		for (int i = 0; i < length; i++) {
-			x[i] = 6 - i;
+			x[i] = (short) (6 - i);
 			y[i] = 7;
 		}
 		locateFood();
@@ -148,7 +148,7 @@ public class SnakeController implements Runnable{
 			e.printStackTrace();
 		}
 		
-		int[][][] matrix = new int[14][14][3];
+		short[][][] matrix = new short[14][14][3];
 		
 		for (int i = 0; i < 14; i++) {
 			for (int j = 0; j < 14; j++) {
@@ -163,7 +163,7 @@ public class SnakeController implements Runnable{
 	}
 	
 	private void assembleMatrixInformation() {
-		int[][][] matrix = new int[14][14][3];
+		short[][][] matrix = new short[14][14][3];
 
 		//apfel setzen
 		matrix[apple[0]][apple[1]][0] = apple[2];
