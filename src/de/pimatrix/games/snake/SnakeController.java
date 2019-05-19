@@ -85,8 +85,8 @@ public class SnakeController implements Runnable{
 		apple[1] = randomPos;
 		
 		apple[2] = 255;
-		apple[2] = 0;
-		apple[2] = 0;
+		apple[3] = 0;
+		apple[4] = 0;
 		
 		foodAvailable = true;
 	}
@@ -148,7 +148,7 @@ public class SnakeController implements Runnable{
 			e.printStackTrace();
 		}
 		
-		short[][][] matrix = new short[14][14][3];
+		int[][][] matrix = new int[14][14][3];
 		
 		for (int i = 0; i < 14; i++) {
 			for (int j = 0; j < 14; j++) {
@@ -163,7 +163,7 @@ public class SnakeController implements Runnable{
 	}
 	
 	private void assembleMatrixInformation() {
-		short[][][] matrix = new short[14][14][3];
+		int[][][] matrix = new int[14][14][3];
 
 		//apfel setzen
 		matrix[apple[0]][apple[1]][0] = apple[2];

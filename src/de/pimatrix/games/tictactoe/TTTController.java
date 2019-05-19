@@ -10,7 +10,7 @@ public class TTTController implements Runnable {
 	private int inputOffset = 41; // app keycode für button[1][1] = 16 -->
 									// Zugriff auf Array über Werte von 0-9
 	private int userInput = 0;
-	private short[][][] matrix = new short[14][14][3];
+	private int[][][] matrix = new int[14][14][3];
 	private boolean validMove = false;
 	private boolean inputReceived = false;
 	private Matrix matrixData;
