@@ -36,11 +36,6 @@ public class TTTController implements Runnable {
 			calculatePattern(calculatePatternCenter(userInput - inputOffset), turn);
 			promptToMatrix();
 
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-			}
-
 			checkWinCondition(turn);
 
 			if (turn == 1) {
@@ -146,6 +141,11 @@ public class TTTController implements Runnable {
 	}
 
 	private void gameOver(int turn) {
+		
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {}
+		
 		if (turn == 1) {
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 14; j++) {

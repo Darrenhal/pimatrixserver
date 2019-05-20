@@ -33,6 +33,8 @@ public class ClientThread implements Runnable {
 		GameCenterUI.clientCount++;
 		GameCenterUI.updateClientCount();
 
+		new Thread(new KeepAlive(so, this)).start();
+		
 		while (clientConnected) {
 			waitForInput();
 		}
@@ -245,4 +247,13 @@ public class ClientThread implements Runnable {
 			pong = null;
 		}
 	}
+	
+	public boolean isConnected() {
+		return clientConnected;
+	}
+	
+	public void setConnection(boolean updateConnection) {
+		clientConnected = updateConnection;
+	}
+	
 }
