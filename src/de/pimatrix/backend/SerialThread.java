@@ -3,11 +3,8 @@ package de.pimatrix.backend;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fazecast.jSerialComm.SerialPort;
 
@@ -17,9 +14,7 @@ public class SerialThread implements Runnable {
 	private int[][][] matrix = new int[14][14][3];
 
 	private int[][][] matrixLeft = new int[7][14][3];
-	private String matrixTranslationRight = "";
 	private int[][][] matrixRight = new int[7][14][3];
-	private String matrixTranslationLeft = "";
 
 	private Socket localHost;
 	private Matrix matrixData;
@@ -29,7 +24,7 @@ public class SerialThread implements Runnable {
 	public void run() {
 
 		SerialJSONWriter writer = new SerialJSONWriter();
-		
+
 		ServerSocket ss = null;
 		localHost = null;
 		matrixData = new Matrix(matrix);
@@ -54,66 +49,7 @@ public class SerialThread implements Runnable {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-//			for (int i = 0; i < 7; i++) {
-//				for (int j = 0; j < 14; j++) {
-//					for (int j2 = 0; j2 < 3; j2++) {
-//						if (i < 6) {
-//							outToArduino1.print(matrixRight[i][j][j2]);
-//							outToArduino1.flush();
-//						} else {
-//							outToArduino2.print(matrixLeft[i][j][j2]);
-//							outToArduino2.flush();
-//						}
-//					}
-//				}
-//			}
-//
-//			try {
-//				Thread.sleep(10);
-//			} catch (Exception e) {
-//			}
 		}
-//		while (true) {
-//			for (int i = 0; i < matrix.length; i++) {
-//				for (int j = 0; j < matrix.length; j++) {
-//					for (int j2 = 0; j2 < matrix.length; j2++) {
-//						if (i < 6) {
-//							outToArduino1.print(matrix[i][j][j2]);
-//							outToArduino1.flush();
-//						} else {
-//							outToArduino1.print(matrix[i][j][j2]);
-//							outToArduino2.flush();
-//						}
-//					}
-//				}
-//			}
-//
-//			try {
-//				Thread.sleep(10);
-//			} catch (Exception e) {}
-//
-//		}
-	}
-
-	private String matrixLeftToJSON(Object data) {
-		try {
-			matrixTranslationLeft = new ObjectMapper().writeValueAsString(data) + "\n";
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		
-		return matrixTranslationLeft;
-	}
-
-	private String matrixRightToJSON(Object data) {
-		try {
-			matrixTranslationLeft = new ObjectMapper().writeValueAsString(data) + "\n";
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-		}
-		
-		return matrixTranslationRight;
 	}
 
 	private void splitMatrix() {
