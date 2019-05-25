@@ -12,6 +12,7 @@ public class KeepAlive implements Runnable {
 	private OutputStream out;
 
 	public KeepAlive(Socket keepAliveSocket, ClientThread endPoint) {
+		
 		try {
 			in = keepAliveSocket.getInputStream();
 			out = keepAliveSocket.getOutputStream();
@@ -32,6 +33,7 @@ public class KeepAlive implements Runnable {
 
 			try {
 				out.write(1);
+				System.out.println("sending");
 			} catch (IOException e) {
 			}
 
@@ -46,6 +48,7 @@ public class KeepAlive implements Runnable {
 						keepAlive_waitedCycles++;
 						sleep();
 					}
+					System.out.println("receiving - cycle: " + keepAlive_waitedCycles);
 				}
 
 				if (waitingForResponse && keepAlive_waitedCycles == 3) {
@@ -60,7 +63,7 @@ public class KeepAlive implements Runnable {
 	}
 
 	private void sleep() {
-		int keepAlive_timeout = 200;
+		int keepAlive_timeout = 3000;
 
 		try {
 			Thread.sleep(keepAlive_timeout);
