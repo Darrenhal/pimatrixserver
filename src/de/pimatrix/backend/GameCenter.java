@@ -35,8 +35,8 @@ public class GameCenter {
 				frame = new GameCenterUI();
 				
 				//Thread für serielle Kommunikation mit Arduinos erstellen und starten
-				serialConnection = new SerialThread();
-				new Thread(serialConnection).start();
+//				serialConnection = new SerialThread();
+//				new Thread(serialConnection).start();
 			}
 		});
 	}
