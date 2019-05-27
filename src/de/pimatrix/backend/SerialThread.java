@@ -8,6 +8,8 @@ import java.net.Socket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fazecast.jSerialComm.SerialPort;
 
+import jssc.SerialPortException;
+
 public class SerialThread implements Runnable {
 
 	public static SerialPort arduino1, arduino2;
@@ -93,23 +95,43 @@ public class SerialThread implements Runnable {
 	class SerialJSONWriter implements AutoCloseable {
 
 		// Zuweisen der seriellen Ports
-		private final SerialPort arduino1, arduino2;
+//		private final SerialPort /*arduino1, arduino2,*/ arduinoMega;
+		private jssc.SerialPort arduinoMega;
 
 		public SerialJSONWriter() {
-			arduino1 = SerialPort.getCommPort("COM5");
-			arduino2 = SerialPort.getCommPort("COM6");
+//			arduino1 = SerialPort.getCommPort("COM5");
+//			arduino2 = SerialPort.getCommPort("COM6");
+//			arduinoMega = SerialPort.getCommPort("COM7");
+			arduinoMega = new jssc.SerialPort("COM7");
+			try {
+				arduinoMega.openPort();
+				arduinoMega.setParams(115200, 8, 1, jssc.SerialPort.PARITY_EVEN);
+			} catch (SerialPortException e) {
+				e.printStackTrace();
+			}
+//			arduinoMega.setBaudRate(115200);
+//			arduinoMega.setNumDataBits(8);
+//			arduinoMega.setNumStopBits(1);
+//			arduinoMega.setParity(0);
+			
 
 			// setzen der Timeouts für die Kommunikation mit den Arduinos
-			arduino1.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-			arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-			arduino1.setBaudRate(115200);
-			arduino2.setBaudRate(115200);
-			arduino1.openPort();
-			arduino2.openPort();
-			arduino1.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
-					0);
-			arduino2.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
-					0);
+//			arduino1.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+//			arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+//			arduinoMega.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+//			arduino1.setBaudRate(115200);
+//			arduino2.setBaudRate(115200);
+//			arduinoMega.setBaudRate(115200);
+//			arduino1.openPort();
+//			arduino2.openPort();
+//			arduinoMega.openPort();
+//			arduino1.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
+//					0);
+//			arduino2.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
+//					0);
+
+//			arduinoMega.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
+//					0);
 		}
 
 		public void write() {
@@ -119,18 +141,27 @@ public class SerialThread implements Runnable {
 		private void tryWrite(Object dataRight, Object dataLeft) throws IOException {
 			String dataAsJSONRight = new ObjectMapper().writeValueAsString(dataRight) + "\n";
 			String dataAsJSONLeft = new ObjectMapper().writeValueAsString(dataLeft) + "\n";
-			for (int i = 0; i < dataAsJSONRight.length(); i++) {
-				arduino1.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
+			try {
+				arduinoMega.writeString(dataAsJSONRight);
+			} catch (SerialPortException e) {
+				e.printStackTrace();
 			}
-			for (int i = 0; i < dataAsJSONLeft.length(); i++) {
-				arduino2.getOutputStream().write(dataAsJSONLeft.getBytes()[i]);
-			}
+//			for (int i = 0; i < dataAsJSONRight.length(); i++) {
+////				arduino1.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
+//				System.out.println(dataAsJSONRight);
+//				arduinoMega.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
+//			}
+//			for (int i = 0; i < dataAsJSONLeft.length(); i++) {
+////				arduino2.getOutputStream().write(dataAsJSONLeft.getBytes()[i]);
+//				arduinoMega.getOutputStream().write(dataAsJSONLeft.getBytes()[i]);
+//			}
 		}
 
 		@Override
 		public void close() throws Exception {
-			arduino1.closePort();
-			arduino2.closePort();
+//			arduino1.closePort();
+//			arduino2.closePort();
+			arduinoMega.closePort();
 		}
 	}
 }

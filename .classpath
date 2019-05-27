@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="H:/Studium/Studienarbeit/GameCenterServer/pimatrixserver/Jackson/jackson-annotations-2.9.8.jar"/>
 	<classpathentry kind="lib" path="H:/Studium/Studienarbeit/GameCenterServer/pimatrixserver/Jackson/jackson-core-2.9.8.jar"/>
 	<classpathentry kind="lib" path="H:/Studium/Studienarbeit/GameCenterServer/pimatrixserver/Jackson/jackson-databind-2.9.8.jar"/>
+	<classpathentry kind="lib" path="H:/Studium/Studienarbeit/GameCenterServer/pimatrixserver/jssc-2.8.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
