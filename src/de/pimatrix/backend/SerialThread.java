@@ -105,14 +105,14 @@ public class SerialThread implements Runnable {
 			arduinoMega = new jssc.SerialPort("COM7");
 			try {
 				arduinoMega.openPort();
-				arduinoMega.setParams(115200, 8, 1, jssc.SerialPort.PARITY_EVEN);
+				arduinoMega.setParams(115200, 8, 1, jssc.SerialPort.PARITY_NONE);
 			} catch (SerialPortException e) {
 				e.printStackTrace();
 			}
 //			arduinoMega.setBaudRate(115200);
 //			arduinoMega.setNumDataBits(8);
 //			arduinoMega.setNumStopBits(1);
-//			arduinoMega.setParity(0);
+//			arduinoMega.setParity(SerialPort.NO_PARITY);
 			
 
 			// setzen der Timeouts für die Kommunikation mit den Arduinos
@@ -141,15 +141,20 @@ public class SerialThread implements Runnable {
 		private void tryWrite(Object dataRight, Object dataLeft) throws IOException {
 			String dataAsJSONRight = new ObjectMapper().writeValueAsString(dataRight) + "\n";
 			String dataAsJSONLeft = new ObjectMapper().writeValueAsString(dataLeft) + "\n";
+			String data = new ObjectMapper().writeValueAsString(matrix) + "\n";
 			try {
-				arduinoMega.writeString(dataAsJSONRight);
+//				arduinoMega.openPort();
+				System.out.println("To Arduino: " + data);
+				arduinoMega.writeString(data);
+//				arduinoMega.closePort();
 			} catch (SerialPortException e) {
 				e.printStackTrace();
 			}
+//			System.out.println("Sending to arduino: " + dataAsJSONRight);
 //			for (int i = 0; i < dataAsJSONRight.length(); i++) {
 ////				arduino1.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
-//				System.out.println(dataAsJSONRight);
 //				arduinoMega.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
+//				System.out.println("Arduino Feedback: " + arduinoMega.getInputStream().read());
 //			}
 //			for (int i = 0; i < dataAsJSONLeft.length(); i++) {
 ////				arduino2.getOutputStream().write(dataAsJSONLeft.getBytes()[i]);
