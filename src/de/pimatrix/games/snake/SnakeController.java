@@ -8,7 +8,7 @@ import de.pimatrix.backend.Matrix;
 public class SnakeController implements Runnable{
 	
 	public static boolean running;
-	private boolean left = false, right = true, up = false, down = false;
+	public boolean right = false, left = true, up = false, down = false;
 	private boolean foodAvailable = false;
 	
 	private final short x[] = new short[196];
@@ -35,7 +35,7 @@ public class SnakeController implements Runnable{
 			}
 			
 			try {
-				Thread.sleep(700);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {}
 		}
 	}
@@ -50,29 +50,6 @@ public class SnakeController implements Runnable{
 	
 	public void setDirection(int modifier) {
 		System.out.println("Set Direction");
-		if (modifier == 2 && right != true) {
-			left = true;
-			up = false;
-			down = false;
-		}
-		
-		if (modifier == 3 && left != true) {
-			right = true;
-			up = false;
-			down = false;
-		}
-		
-		if (modifier == 4 && down != true) {
-			up = true;
-			left = false;
-			right = false;
-		}
-		
-		if (modifier == 5 && up != true) {
-			down = true;
-			left = false;
-			right = false;
-		}
 		
 	}
 	
@@ -119,10 +96,10 @@ public class SnakeController implements Runnable{
 			y[i] = y[(i - 1)];
 		}
 		
-		if (left) {
+		if (right) {
 			x[0] -= 1;
 		}
-		if (right) {
+		if (left) {
 			x[0] += 1;
 		}
 		if (up) {
@@ -148,7 +125,7 @@ public class SnakeController implements Runnable{
 			e.printStackTrace();
 		}
 		
-		int[][][] matrix = new int[14][14][3];
+		short[][][] matrix = new short[14][14][3];
 		
 		for (int i = 0; i < 14; i++) {
 			for (int j = 0; j < 14; j++) {
@@ -163,7 +140,7 @@ public class SnakeController implements Runnable{
 	}
 	
 	private void assembleMatrixInformation() {
-		int[][][] matrix = new int[14][14][3];
+		short[][][] matrix = new short[14][14][3];
 
 		//apfel setzen
 		matrix[apple[0]][apple[1]][0] = apple[2];

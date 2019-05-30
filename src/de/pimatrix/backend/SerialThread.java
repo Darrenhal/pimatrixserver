@@ -5,18 +5,15 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fazecast.jSerialComm.SerialPort;
-
+import jssc.SerialPort;
 import jssc.SerialPortException;
 
 public class SerialThread implements Runnable {
 
-	public static SerialPort arduino1, arduino2;
-	private int[][][] matrix = new int[14][14][3];
+	private short[][][] matrix = new short[14][14][3];
 
-	private int[][][] matrixLeft = new int[7][14][3];
-	private int[][][] matrixRight = new int[7][14][3];
+	private short[][][] matrixLeft = new short[7][14][3];
+	private short[][][] matrixRight = new short[7][14][3];
 
 	private Socket localHost;
 	private Matrix matrixData;
@@ -47,7 +44,7 @@ public class SerialThread implements Runnable {
 			splitMatrix();
 
 			try {
-				writer.tryWrite(matrixRight, matrixLeft);
+				writer.tryWrite();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -80,7 +77,6 @@ public class SerialThread implements Runnable {
 	}
 
 	public void waitForMatrix() {
-		System.out.println("Waiting for Matrix");
 		try {
 			matrixData = (Matrix) in.readObject();
 		} catch (IOException e) {
@@ -95,77 +91,40 @@ public class SerialThread implements Runnable {
 	class SerialJSONWriter implements AutoCloseable {
 
 		// Zuweisen der seriellen Ports
-//		private final SerialPort /*arduino1, arduino2,*/ arduinoMega;
-		private jssc.SerialPort arduinoMega;
+		private SerialPort arduinoMega;
 
 		public SerialJSONWriter() {
-//			arduino1 = SerialPort.getCommPort("COM5");
-//			arduino2 = SerialPort.getCommPort("COM6");
-//			arduinoMega = SerialPort.getCommPort("COM7");
-			arduinoMega = new jssc.SerialPort("COM7");
+			arduinoMega = new SerialPort("COM7");
 			try {
 				arduinoMega.openPort();
-				arduinoMega.setParams(115200, 8, 1, jssc.SerialPort.PARITY_NONE);
+				arduinoMega.setParams(115200, 8, 1, SerialPort.PARITY_NONE);
 			} catch (SerialPortException e) {
 				e.printStackTrace();
 			}
-//			arduinoMega.setBaudRate(115200);
-//			arduinoMega.setNumDataBits(8);
-//			arduinoMega.setNumStopBits(1);
-//			arduinoMega.setParity(SerialPort.NO_PARITY);
-			
-
-			// setzen der Timeouts für die Kommunikation mit den Arduinos
-//			arduino1.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-//			arduino2.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-//			arduinoMega.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
-//			arduino1.setBaudRate(115200);
-//			arduino2.setBaudRate(115200);
-//			arduinoMega.setBaudRate(115200);
-//			arduino1.openPort();
-//			arduino2.openPort();
-//			arduinoMega.openPort();
-//			arduino1.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
-//					0);
-//			arduino2.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
-//					0);
-
-//			arduinoMega.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0,
-//					0);
 		}
 
 		public void write() {
 
 		}
 
-		private void tryWrite(Object dataRight, Object dataLeft) throws IOException {
-			String dataAsJSONRight = new ObjectMapper().writeValueAsString(dataRight) + "\n";
-			String dataAsJSONLeft = new ObjectMapper().writeValueAsString(dataLeft) + "\n";
-			String data = new ObjectMapper().writeValueAsString(matrix) + "\n";
+		private void tryWrite() throws IOException {
 			try {
-//				arduinoMega.openPort();
-				System.out.println("To Arduino: " + data);
-				arduinoMega.writeString(data);
-//				arduinoMega.closePort();
-			} catch (SerialPortException e) {
+				for (int i = 0; i < 14; i++) {
+					for (int j = 0; j < 14; j++) {
+						for (int j2 = 0; j2 < 3; j2++) {
+							arduinoMega.writeByte((byte) matrix[i][j][j2]);
+//							System.out.print(matrix[i][j][j2]);
+						}
+					}
+				}
+//				System.out.println("Waiting for response" + arduinoMega.readString());
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-//			System.out.println("Sending to arduino: " + dataAsJSONRight);
-//			for (int i = 0; i < dataAsJSONRight.length(); i++) {
-////				arduino1.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
-//				arduinoMega.getOutputStream().write(dataAsJSONRight.getBytes()[i]);
-//				System.out.println("Arduino Feedback: " + arduinoMega.getInputStream().read());
-//			}
-//			for (int i = 0; i < dataAsJSONLeft.length(); i++) {
-////				arduino2.getOutputStream().write(dataAsJSONLeft.getBytes()[i]);
-//				arduinoMega.getOutputStream().write(dataAsJSONLeft.getBytes()[i]);
-//			}
 		}
 
 		@Override
 		public void close() throws Exception {
-//			arduino1.closePort();
-//			arduino2.closePort();
 			arduinoMega.closePort();
 		}
 	}

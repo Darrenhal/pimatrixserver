@@ -60,18 +60,39 @@ public class ClientThread implements Runnable {
 					snake = new SnakeController();
 					SnakeController.running = true;
 					new Thread(snake).start();
-					;
 				}
 				break;
 
 			case 2: // Snake left
-
+				if (snake.right != true) {
+					snake.left = true;
+					snake.up = false;
+					snake.down = false;
+				}
+				break;
+				
 			case 3: // Snake right
-
+				if (snake.left != true) {
+					snake.right = true;
+					snake.up = false;
+					snake.down = false;
+				}
+				break;
+				
 			case 4: // Snake up
-
+				if (snake.down != true) {
+					snake.up = true;
+					snake.right = false;
+					snake.left = false;
+				}
+				break;
+				
 			case 5: // Snake down
-				snake.setDirection(input);
+				if (snake.up != true) {
+					snake.down = true;
+					snake.right = false;
+					snake.left = false;
+				}
 				break;
 
 			case 6: // end Snake
