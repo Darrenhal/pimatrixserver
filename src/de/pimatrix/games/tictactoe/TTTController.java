@@ -17,9 +17,8 @@ public class TTTController implements Runnable {
 
 	@Override
 	public void run() {
-		initGame();
-
 		int turn = 1;
+		initGame();
 
 		while (running) {
 			validMove = false;
@@ -34,6 +33,11 @@ public class TTTController implements Runnable {
 				}
 			}
 			calculatePattern(calculatePatternCenter(userInput - inputOffset), turn);
+			if (turn == 1) {
+				showUserTurn(2);
+			} else {
+				showUserTurn(1);
+			}
 			promptToMatrix();
 
 			checkWinCondition(turn);
@@ -51,39 +55,47 @@ public class TTTController implements Runnable {
 
 		switch (field) {
 		case 0:
-			centerCoordinates[0] = 1;
+			centerCoordinates[0] = 11;
 			centerCoordinates[1] = 11;
+			return centerCoordinates;
 
 		case 1:
 			centerCoordinates[0] = 6;
 			centerCoordinates[1] = 11;
+			return centerCoordinates;
 
 		case 2:
-			centerCoordinates[0] = 11;
+			centerCoordinates[0] = 1;
 			centerCoordinates[1] = 11;
+			return centerCoordinates;
 
 		case 3:
-			centerCoordinates[0] = 1;
+			centerCoordinates[0] = 11;
 			centerCoordinates[1] = 6;
+			return centerCoordinates;
 
 		case 4:
 			centerCoordinates[0] = 6;
 			centerCoordinates[1] = 6;
+			return centerCoordinates;
 
 		case 5:
-			centerCoordinates[0] = 11;
+			centerCoordinates[0] = 1;
 			centerCoordinates[1] = 6;
+			return centerCoordinates;
 
 		case 6:
-			centerCoordinates[0] = 1;
+			centerCoordinates[0] = 11;
 			centerCoordinates[1] = 1;
+			return centerCoordinates;
 
 		case 7:
 			centerCoordinates[0] = 6;
 			centerCoordinates[1] = 1;
+			return centerCoordinates;
 
 		case 8:
-			centerCoordinates[0] = 11;
+			centerCoordinates[0] = 1;
 			centerCoordinates[1] = 1;
 			return centerCoordinates;
 
@@ -98,10 +110,29 @@ public class TTTController implements Runnable {
 		for (int i = 0; i < isBlocked.length; i++) {
 			isBlocked[i] = 0;
 		}
-
+		showUserTurn(1);
 		generateGrid();
+		promptToMatrix();
 	}
 
+	private void showUserTurn(int turn) {
+		if (turn == 1) {
+			for (int i = 0; i < 13; i++) {
+				matrix[13][i][0] = 255;
+				matrix[i][13][0] = 255;
+				matrix[13][i][1] = 0;
+				matrix[i][13][1] = 0;
+			}
+		} else {
+			for (int i = 0; i < 13; i++) {
+				matrix[13][i][1] = 255;
+				matrix[i][13][1] = 255;
+				matrix[13][i][0] = 0;
+				matrix[i][13][0] = 0;
+			}
+		}
+	}
+	
 	private void waitForUserTurn(int turn) {
 		if (isBlocked[userInput - inputOffset] == 0) {
 			isBlocked[userInput - inputOffset] = turn;
@@ -158,19 +189,20 @@ public class TTTController implements Runnable {
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 14; j++) {
 					matrix[i][j][0] = 0;
-					matrix[i][j][1] = 0;
-					matrix[i][j][2] = 255;
+					matrix[i][j][1] = 255;
+					matrix[i][j][2] = 0;
 				}
 			}
 		} else if (turn == 0) {
 			for (int i = 0; i < 14; i++) {
 				for (int j = 0; j < 14; j++) {
 					matrix[i][j][0] = 0;
-					matrix[i][j][1] = 255;
-					matrix[i][j][2] = 0;
+					matrix[i][j][1] = 0;
+					matrix[i][j][2] = 255;
 				}
 			}
 		}
+		promptToMatrix();
 		
 		running = false;
 		ClientThread.endGame(this.getClass());
@@ -224,17 +256,17 @@ public class TTTController implements Runnable {
 			matrix[patternCenter[0] + 1][patternCenter[1]
 					+ 1][1] = matrix[patternCenter[0] + 1][patternCenter[1] + 1][2] = 0;
 		} else {
-			matrix[patternCenter[0] - 1][patternCenter[1]][0] = 255;
-			matrix[patternCenter[0] - 1][patternCenter[1]][1] = matrix[patternCenter[0] - 1][patternCenter[1]][2] = 0;
+			matrix[patternCenter[0] - 1][patternCenter[1]][1] = 255;
+			matrix[patternCenter[0] - 1][patternCenter[1]][0] = matrix[patternCenter[0] - 1][patternCenter[1]][2] = 0;
 
-			matrix[patternCenter[0] + 1][patternCenter[1]][0] = 255;
-			matrix[patternCenter[0] + 1][patternCenter[1]][1] = matrix[patternCenter[0] + 1][patternCenter[1]][2] = 0;
+			matrix[patternCenter[0] + 1][patternCenter[1]][1] = 255;
+			matrix[patternCenter[0] + 1][patternCenter[1]][0] = matrix[patternCenter[0] + 1][patternCenter[1]][2] = 0;
 
-			matrix[patternCenter[0]][patternCenter[1] - 1][0] = 255;
-			matrix[patternCenter[0]][patternCenter[1] - 1][1] = matrix[patternCenter[0]][patternCenter[1] - 1][2] = 0;
+			matrix[patternCenter[0]][patternCenter[1] - 1][1] = 255;
+			matrix[patternCenter[0]][patternCenter[1] - 1][0] = matrix[patternCenter[0]][patternCenter[1] - 1][2] = 0;
 
-			matrix[patternCenter[0]][patternCenter[1] + 1][0] = 255;
-			matrix[patternCenter[0]][patternCenter[1] + 1][1] = matrix[patternCenter[0]][patternCenter[1] + 1][2] = 0;
+			matrix[patternCenter[0]][patternCenter[1] + 1][1] = 255;
+			matrix[patternCenter[0]][patternCenter[1] + 1][0] = matrix[patternCenter[0]][patternCenter[1] + 1][2] = 0;
 		}
 	}
 }
