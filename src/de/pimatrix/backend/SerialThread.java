@@ -11,10 +11,6 @@ import jssc.SerialPortException;
 public class SerialThread implements Runnable {
 
 	private short[][][] matrix = new short[14][14][3];
-
-	private short[][][] matrixLeft = new short[7][14][3];
-	private short[][][] matrixRight = new short[7][14][3];
-
 	private Socket localHost;
 	private Matrix matrixData;
 	private ObjectInputStream in;
@@ -28,9 +24,10 @@ public class SerialThread implements Runnable {
 		localHost = null;
 		matrixData = new Matrix(matrix);
 		try {
-			ss = new ServerSocket(62000); // erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende
+			ss = new ServerSocket(63000); // erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende
 											// Matrix vom ClientThread
 		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		while (true) {
@@ -41,28 +38,11 @@ public class SerialThread implements Runnable {
 			}
 			initializeInputStream();
 			waitForMatrix();
-			splitMatrix();
 
 			try {
 				writer.tryWrite();
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
-		}
-	}
-
-	private void splitMatrix() {
-		for (int i = 0; i < 14; i++) {
-			for (int j = 0; j < 14; j++) {
-				if (i <= 6) {
-					matrixRight[i][j][0] = matrix[i][j][0];
-					matrixRight[i][j][1] = matrix[i][j][1];
-					matrixRight[i][j][2] = matrix[i][j][2];
-				} else {
-					matrixLeft[i - 7][j][0] = matrix[i][j][0];
-					matrixLeft[i - 7][j][1] = matrix[i][j][1];
-					matrixLeft[i - 7][j][2] = matrix[i][j][2];
-				}
 			}
 		}
 	}
@@ -113,7 +93,6 @@ public class SerialThread implements Runnable {
 					for (int j = 0; j < 14; j++) {
 						for (int j2 = 0; j2 < 3; j2++) {
 							arduinoMega.writeByte((byte) matrix[i][j][j2]);
-//							System.out.print(matrix[i][j][j2]);
 						}
 					}
 				}

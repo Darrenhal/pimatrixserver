@@ -14,6 +14,7 @@ public class TTTController implements Runnable {
 	private boolean validMove = false;
 	private boolean inputReceived = false;
 	private Matrix matrixData;
+	private int identifier = 1;
 
 	@Override
 	public void run() {
@@ -141,9 +142,8 @@ public class TTTController implements Runnable {
 	}
 
 	private void promptToMatrix() {
-		System.out.println("Prompt To Matrix");
 		matrixData.matrix = matrix;
-		ClientThread.sendToSerialPort(matrixData);
+		ClientThread.sendToSerialPort(matrixData, identifier);
 	}
 
 	private void checkWinCondition(int turn) {

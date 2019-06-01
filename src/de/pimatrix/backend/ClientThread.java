@@ -24,6 +24,8 @@ public class ClientThread implements Runnable {
 	private static TTTController ttt;
 	private static PacManController pacMan;
 	private static PongController pong;
+	
+	private int identifier = 0;
 
 	public ClientThread(Socket so) {
 		GameCenterUI.trackRunState("Client Thread created");
@@ -37,7 +39,7 @@ public class ClientThread implements Runnable {
 		GameCenterUI.updateClientCount();
 
 		showStartUpAnimation();
-		sendToSerialPort(new Matrix(matrix));
+		sendToSerialPort(new Matrix(matrix), identifier);
 
 //		new Thread(new KeepAlive(so, this)).start();
 
@@ -47,7 +49,6 @@ public class ClientThread implements Runnable {
 	}
 
 	private void waitForInput() {
-		System.out.println("Waiting for input");
 		try {
 			InputStream in = so.getInputStream();
 			int input = in.read();
@@ -62,7 +63,6 @@ public class ClientThread implements Runnable {
 				break;
 
 			case 1: // start Snake
-				System.out.println("Snake started");
 				if (noGameStarted()) {
 					snake = new SnakeController();
 					SnakeController.running = true;
@@ -106,7 +106,7 @@ public class ClientThread implements Runnable {
 				SnakeController.running = false;
 				snake = null;
 				showStartUpAnimation();
-				sendToSerialPort(new Matrix(matrix));
+				sendToSerialPort(new Matrix(matrix), identifier);
 				break;
 
 			case 20: // start Tetris
@@ -187,7 +187,7 @@ public class ClientThread implements Runnable {
 				TTTController.running = false;
 				ttt = null;
 				showStartUpAnimation();
-				sendToSerialPort(new Matrix(matrix));
+				sendToSerialPort(new Matrix(matrix), identifier);
 				break;
 
 			case 60: // start Pac Man
@@ -255,15 +255,33 @@ public class ClientThread implements Runnable {
 		}
 	}
 
-	public static void sendToSerialPort(Matrix matrix) {
-		try {
-			Socket socket = new Socket("127.0.0.1", 62000);
-			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-			out.writeObject(matrix);
-			out.close();
-			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+	public static void sendToSerialPort(Matrix matrix, int identifier) {
+		boolean sendPermissionGranted = false;
+		if (identifier != 0) {
+			if (identifier == 1) {
+				if (ttt != null) {
+					sendPermissionGranted = true;
+				}
+			} else if (identifier == 2) {
+				if (snake != null) {
+					sendPermissionGranted = true;
+				}
+			} else if (identifier == 3) {
+				
+			}
+		} else {
+			sendPermissionGranted = true;
+		}
+		if (sendPermissionGranted) {
+			try {
+				Socket socket = new Socket("127.0.0.1", 63000);
+				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+				out.writeObject(matrix);
+				out.close();
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -397,6 +415,6 @@ public class ClientThread implements Runnable {
 				}
 			}
 		}
-		sendToSerialPort(new Matrix(matrix));
+		sendToSerialPort(new Matrix(matrix), identifier);
 	}
 }
