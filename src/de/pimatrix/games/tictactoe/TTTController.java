@@ -7,7 +7,7 @@ public class TTTController implements Runnable {
 
 	public static boolean running;
 	private int[] isBlocked = new int[9];
-	private int inputOffset = 41; // app keycode für button[1][1] = 16 -->
+	private int inputOffset = 41; // app keycode für button[1][1] = 41 -->
 									// Zugriff auf Array über Werte von 0-9
 	private int userInput = 0;
 	private short[][][] matrix = new short[14][14][3];
@@ -118,14 +118,14 @@ public class TTTController implements Runnable {
 
 	private void showUserTurn(int turn) {
 		if (turn == 1) {
-			for (int i = 0; i < 13; i++) {
+			for (int i = 0; i < 14; i++) {
 				matrix[13][i][0] = 255;
 				matrix[i][13][0] = 255;
 				matrix[13][i][1] = 0;
 				matrix[i][13][1] = 0;
 			}
 		} else {
-			for (int i = 0; i < 13; i++) {
+			for (int i = 0; i < 14; i++) {
 				matrix[13][i][1] = 255;
 				matrix[i][13][1] = 255;
 				matrix[13][i][0] = 0;

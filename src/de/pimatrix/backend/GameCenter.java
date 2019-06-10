@@ -2,6 +2,9 @@ package de.pimatrix.backend;
 
 import java.awt.EventQueue;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.Socket;
+
 import de.pimatrix.frontend.GameCenterUI;
 
 public class GameCenter {
@@ -19,6 +22,10 @@ public class GameCenter {
 	}
 	
 	public GameCenter() {
+		startGameCenter();
+	}
+	
+	public static void startGameCenter() {
 		EventQueue.invokeLater(new Runnable() {
 			
 			@Override

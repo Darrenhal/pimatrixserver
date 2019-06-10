@@ -9,6 +9,7 @@ public class SnakeController implements Runnable {
 
 	public static boolean running;
 	public boolean right = false, left = true, up = false, down = false;
+	public boolean lastMoveRight = false, lastMoveLeft = true, lastMoveUp = false, lastMoveDown = false;
 	private boolean foodAvailable = false;
 
 	private final short x[] = new short[196];
@@ -109,15 +110,23 @@ public class SnakeController implements Runnable {
 
 		if (right) {
 			x[0] -= 1;
+			lastMoveRight = true;
+			lastMoveLeft = lastMoveUp = lastMoveDown = false;
 		}
 		if (left) {
 			x[0] += 1;
+			lastMoveLeft = true;
+			lastMoveRight = lastMoveUp = lastMoveDown = false;
 		}
 		if (up) {
 			y[0] += 1;
+			lastMoveUp = true;
+			lastMoveLeft = lastMoveRight = lastMoveDown = false;
 		}
 		if (down) {
 			y[0] -= 1;
+			lastMoveDown = true;
+			lastMoveLeft = lastMoveUp = lastMoveRight = false;
 		}
 	}
 
@@ -127,6 +136,7 @@ public class SnakeController implements Runnable {
 			y[i] = 7;
 		}
 		locateFood();
+		assembleMatrixInformation();
 	}
 
 	private void gameOver() {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Random;
 
 import de.pimatrix.frontend.GameCenterUI;
@@ -71,7 +72,7 @@ public class ClientThread implements Runnable {
 				break;
 
 			case 2: // Snake left
-				if (snake.right != true) {
+				if (!snake.lastMoveRight) {
 					snake.left = true;
 					snake.up = false;
 					snake.down = false;
@@ -79,7 +80,7 @@ public class ClientThread implements Runnable {
 				break;
 
 			case 3: // Snake right
-				if (snake.left != true) {
+				if (!snake.lastMoveLeft) {
 					snake.right = true;
 					snake.up = false;
 					snake.down = false;
@@ -87,7 +88,7 @@ public class ClientThread implements Runnable {
 				break;
 
 			case 4: // Snake up
-				if (snake.down != true) {
+				if (!snake.lastMoveDown) {
 					snake.up = true;
 					snake.right = false;
 					snake.left = false;
@@ -95,14 +96,22 @@ public class ClientThread implements Runnable {
 				break;
 
 			case 5: // Snake down
-				if (snake.up != true) {
+				if (!snake.lastMoveUp) {
 					snake.down = true;
 					snake.right = false;
 					snake.left = false;
 				}
 				break;
 
-			case 6: // end Snake
+			case 6:
+				SnakeController.running = false;
+				snake = null;
+				snake = new SnakeController();
+				SnakeController.running = true;
+				new Thread(snake).start();
+				break;
+				
+			case 7: // end Snake
 				SnakeController.running = false;
 				snake = null;
 				showStartUpAnimation();
@@ -237,6 +246,10 @@ public class ClientThread implements Runnable {
 				PongController.running = false;
 				pong = null;
 				break;
+				
+			case 101:
+				shutDownAll();
+				break;
 
 			default:
 				break;
@@ -246,6 +259,36 @@ public class ClientThread implements Runnable {
 		}
 	}
 
+	private void shutDownAll() {
+		SnakeController.running = false;
+		snake = null;
+		TTTController.running = false;
+		if (TTTController.running) {
+			ttt.setUserInput(41);
+		}
+		ttt = null;
+		TetrisController.running = false;
+		tetris = null;
+		PacManController.running = false;
+		pong = null;
+		PongController.running = false;
+		
+		GameCenter.serialConnection.forceReset = true;
+		sendToSerialPort(new Matrix(matrix), 0);
+		try {
+			Thread.sleep(30);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		GameCenter.serialConnection.reset();
+		GameCenter.serialConnection = null;
+		GameCenter.serialConnection = new SerialThread();
+		new Thread(GameCenter.serialConnection).start();
+		
+//		showStartUpAnimation();
+//		sendToSerialPort(new Matrix(matrix), identifier);
+	}
+	
 	private boolean noGameStarted() {
 		if (SnakeController.running || TetrisController.running || TTTController.running || PacManController.running
 				|| PongController.running) {
@@ -256,33 +299,44 @@ public class ClientThread implements Runnable {
 	}
 
 	public static void sendToSerialPort(Matrix matrix, int identifier) {
-		boolean sendPermissionGranted = false;
-		if (identifier != 0) {
-			if (identifier == 1) {
-				if (ttt != null) {
-					sendPermissionGranted = true;
-				}
-			} else if (identifier == 2) {
-				if (snake != null) {
-					sendPermissionGranted = true;
-				}
-			} else if (identifier == 3) {
-				
-			}
-		} else {
-			sendPermissionGranted = true;
+		try {
+			Socket socket = new Socket("127.0.0.1", SerialThread.internalConnectivityPort);
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+			out.writeObject(matrix);
+			out.close();
+			socket.close();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		if (sendPermissionGranted) {
-			try {
-				Socket socket = new Socket("127.0.0.1", 63000);
-				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-				out.writeObject(matrix);
-				out.close();
-				socket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+//		boolean sendPermissionGranted = false;
+//		if (identifier != 0) {
+//			if (identifier == 1) {
+//				if (ttt != null) {
+//					sendPermissionGranted = true;
+//				}
+//			} else if (identifier == 2) {
+//				if (snake != null) {
+//					sendPermissionGranted = true;
+//				}
+//			} else if (identifier == 3) {
+//				
+//			}
+//		} else {
+//			sendPermissionGranted = true;
+//		}
+//		if (sendPermissionGranted) {
+//			try {
+//				Socket socket = new Socket("127.0.0.1", SerialThread.internalConnectivityPort);
+//				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+//				out.writeObject(matrix);
+//				out.close();
+//				socket.close();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 	@SuppressWarnings("rawtypes")

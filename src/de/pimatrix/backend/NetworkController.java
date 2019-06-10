@@ -10,7 +10,8 @@ public class NetworkController implements Runnable {
 
 	public static boolean serverSocketBuilt = false;
 	public static String IPAddress = "";
-
+	public static boolean forceReset = false;
+	
 	private ServerSocket ss = null;
 
 	@Override
@@ -25,7 +26,7 @@ public class NetworkController implements Runnable {
 		// IP und Port auf UI anzeigen
 		IPAddress = IPAddress + " - " + ss.getLocalPort();
 
-		while (true) {
+		while (!forceReset) {
 			try {
 				so = ss.accept(); // ServerSocket wartet auf Verbindungsanfrage
 									// von Client und weist ihm einen Socket für
@@ -33,7 +34,9 @@ public class NetworkController implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			new Thread(new ClientThread(so)).start(); //starten eines neuen ClientThreads mit dem dem Client zugeordneten Socket
+			if (!forceReset) {
+				new Thread(new ClientThread(so)).start(); //starten eines neuen ClientThreads mit dem dem Client zugeordneten Socket
+			}
 		}
 	}
 

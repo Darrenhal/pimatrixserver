@@ -14,23 +14,30 @@ public class SerialThread implements Runnable {
 	private Socket localHost;
 	private Matrix matrixData;
 	private ObjectInputStream in;
+	public static int internalConnectivityPort = 55000;
+	public boolean forceReset = false;
+	private SerialJSONWriter writer;
+	private ServerSocket ss;
 
 	@Override
 	public void run() {
 
-		SerialJSONWriter writer = new SerialJSONWriter();
+		writer = new SerialJSONWriter();
 
-		ServerSocket ss = null;
+		ss = null;
 		localHost = null;
 		matrixData = new Matrix(matrix);
-		try {
-			ss = new ServerSocket(63000); // erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende
-											// Matrix vom ClientThread
-		} catch (IOException e) {
-			e.printStackTrace();
+		while (ss == null) {
+			try {
+				ss = new ServerSocket(internalConnectivityPort); // erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende
+												// Matrix vom ClientThread
+			} catch (IOException e) {
+				internalConnectivityPort++;
+				e.printStackTrace();
+			}
 		}
 
-		while (true) {
+		while (!forceReset) {
 			try {
 				localHost = ss.accept();
 			} catch (Exception e) {
@@ -47,6 +54,16 @@ public class SerialThread implements Runnable {
 		}
 	}
 
+	public void reset() {
+		try {
+			ss.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		writer.reset();
+		writer = null;
+	}
+	
 	private void initializeInputStream() {
 		try {
 			InputStream input = localHost.getInputStream();
@@ -83,8 +100,13 @@ public class SerialThread implements Runnable {
 			}
 		}
 
-		public void write() {
-
+		public void reset() {
+			try {
+				close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			arduinoMega = null;
 		}
 
 		private void tryWrite() throws IOException {
