@@ -464,7 +464,6 @@ public class ClientThread implements Runnable {
 				}
 			}
 		}
-		sendToSerialPort(new Matrix(matrix)); // erneutes Senden einer Matrix, damit Schleifen Kopf im SerialThread
-												// erreicht werden kann
+		sendToSerialPort(new Matrix(matrix)); // Senden der Matrix an seriellen Thread
 	}
 }
