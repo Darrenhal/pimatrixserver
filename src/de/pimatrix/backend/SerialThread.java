@@ -10,44 +10,50 @@ import jssc.SerialPortException;
 
 public class SerialThread implements Runnable {
 
-	private short[][][] matrix = new short[14][14][3];
+	private short[][][] matrix = new short[14][14][3]; //lokale Referenz auf zu übertragende RGB-Matrix
 	private Socket localHost;
 	private Matrix matrixData;
 	private ObjectInputStream in;
-	public static int internalConnectivityPort = 55000;
-	public boolean forceReset = false;
-	private SerialJSONWriter writer;
+	public static int internalConnectivityPort = 55000; // Port für interne Kommunikation --> ClientThread kann auf
+														// Variable zugreifen, sodass die Problematik eines blockierten
+														// Ports wegfällt
+	public boolean forceReset = false; // boolean zur Steuerung eines Resets der seriellen Verbindung
+	private SerialWriter writer;
 	private ServerSocket ss;
 
 	@Override
 	public void run() {
 
-		writer = new SerialJSONWriter();
+		writer = new SerialWriter(); // Erstellen eines SerialWriters, über welchen Daten an den Arduino geschrieben
+										// werden
 
 		ss = null;
 		localHost = null;
-		matrixData = new Matrix(matrix);
-		while (ss == null) {
+		matrixData = new Matrix(matrix); // Erstellen eines neuen Matrix-Objekts mit leerem int[14][14][3]-Array
+		while (ss == null) { // Solange versuchen ServerSocket zu erstellen, bis ServerSocket nicht mehr NULL
+								// ist
 			try {
-				ss = new ServerSocket(internalConnectivityPort); // erstellen eines lokalen Sockets auf Port 62000, um die zu übertragende
-												// Matrix vom ClientThread
+				ss = new ServerSocket(internalConnectivityPort); // erstellen eines lokalen Sockets auf Port 62000, um
+																	// die zu übertragende
+																	// Matrix vom ClientThread
 			} catch (IOException e) {
-				internalConnectivityPort++;
-				e.printStackTrace();
+				internalConnectivityPort++; // Falls ServerSocket nicht erstellt werden kann --> Hochzählen der
+											// Port-Nummer und erneut versuchen ServerSocket zu erstellen
 			}
 		}
 
-		while (!forceReset) {
+		while (!forceReset) { // Solange Schleife durchführen bis Verbindung zum Arduino zurückgesetzt werden
+								// soll
 			try {
-				localHost = ss.accept();
+				localHost = ss.accept(); // Warten auf Verbindungsanfrage des ClientThreads --> blockender Aufruf -->
+											// erst, wenn ClientThread sich mit Daten meldet läuft Thread weiter
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
-			initializeInputStream();
-			waitForMatrix();
+			initializeInputStream(); // Initialisieren des InputStreams
+			waitForMatrix(); // Einlesen der Matrix-Daten
 
 			try {
-				writer.tryWrite();
+				writer.write(); // Schreiben der Daten an den Arduino
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -56,18 +62,19 @@ public class SerialThread implements Runnable {
 
 	public void reset() {
 		try {
-			ss.close();
+			ss.close(); // Schließen des ServerSockets, falls Verbindung zurückgesetzt wird
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		writer.reset();
-		writer = null;
+		writer.reset(); // Schließen des seriellen Ports, falls Verbindung zurückgesetzt wird
+		writer = null; // writer-Objekt auf NULL setzen --> Freigeben des Speichers durch
+						// Garbage-Collector
 	}
-	
+
 	private void initializeInputStream() {
 		try {
-			InputStream input = localHost.getInputStream();
-			in = new ObjectInputStream(input);
+			InputStream input = localHost.getInputStream(); // InputStream vom ServerSocket holen
+			in = new ObjectInputStream(input); // ObjectInputStream vom InputStream holen
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -75,26 +82,34 @@ public class SerialThread implements Runnable {
 
 	public void waitForMatrix() {
 		try {
-			matrixData = (Matrix) in.readObject();
+			matrixData = (Matrix) in.readObject(); // Einlesen des serialisierten Matrix-Objekts und Casten auf ein
+													// Objekt der Matrix-Klasse
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 
-		this.matrix = matrixData.matrix;
+		this.matrix = matrixData.matrix; // Zuweisen des int[14][14][3]-Arrays, welches im übertragenen Matrix-Objekt
+											// gespeichert ist, auf lokales int[14][14][3]-Array
 	}
 
-	class SerialJSONWriter implements AutoCloseable {
+	class SerialWriter implements AutoCloseable {
 
-		// Zuweisen der seriellen Ports
+		// Deklarieren des seriellen Ports
 		private SerialPort arduinoMega;
 
-		public SerialJSONWriter() {
-			arduinoMega = new SerialPort("COM7");
+		public SerialWriter() {
+			arduinoMega = new SerialPort("/dev/ttyUSB_arduMega"); // Zuweisen des seriellen Ports auf selbst
+																	// eingerichteten statischen Port --> Pi weist
+																	// "unserem" Arduino Mega über Identifikation der
+																	// Seriennummer der Arduinos einen statisch
+																	// benannten Port zu --> Betriebssicherheit
 			try {
-				arduinoMega.openPort();
-				arduinoMega.setParams(115200, 8, 1, SerialPort.PARITY_NONE);
+				arduinoMega.openPort(); // Öffnen des seriellen Ports
+				arduinoMega.setParams(115200, 8, 1, SerialPort.PARITY_NONE); // Einstellen der Parameter: Baudrate
+																				// 115200 Baud, 8 Data Bits, 1 Stop Bit,
+																				// keine Parität
 			} catch (SerialPortException e) {
 				e.printStackTrace();
 			}
@@ -102,23 +117,23 @@ public class SerialThread implements Runnable {
 
 		public void reset() {
 			try {
-				close();
+				close(); // Schließen des seriellen Ports, falls Verbindung zurückgesetzt wird
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			arduinoMega = null;
+			arduinoMega = null; // seriellen Port auf NULL setzen --> Freigeben des Speichers durch
+								// Garbage-Collector
 		}
 
-		private void tryWrite() throws IOException {
-			try {
+		private void write() throws IOException {
+			try { //Iterieren über int[14][14][3]-Array mit 3 Schleifen (je Dimension eine Schleife)
 				for (int i = 0; i < 14; i++) {
 					for (int j = 0; j < 14; j++) {
 						for (int j2 = 0; j2 < 3; j2++) {
-							arduinoMega.writeByte((byte) matrix[i][j][j2]);
+							arduinoMega.writeByte((byte) matrix[i][j][j2]); //byteweises Schreiben der Daten an den Arduino
 						}
 					}
 				}
-//				System.out.println("Waiting for response" + arduinoMega.readString());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -126,7 +141,7 @@ public class SerialThread implements Runnable {
 
 		@Override
 		public void close() throws Exception {
-			arduinoMega.closePort();
+			arduinoMega.closePort(); //Schließen des seriellen Ports, falls Verbindung zurückgesetzt wird
 		}
 	}
 }
