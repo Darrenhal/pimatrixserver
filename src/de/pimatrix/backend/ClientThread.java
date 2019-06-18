@@ -14,6 +14,7 @@ import de.pimatrix.games.snake.SnakeController;
 import de.pimatrix.games.tetris.TetrisController;
 import de.pimatrix.games.tictactoe.TTTController;
 
+@SuppressWarnings("unused")
 public class ClientThread implements Runnable {
 
 	private Socket so;
