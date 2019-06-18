@@ -25,97 +25,100 @@ public class ClientThread implements Runnable {
 	private static TTTController ttt;
 	private static PacManController pacMan;
 	private static PongController pong;
-	
-	private int identifier = 0;
 
 	public ClientThread(Socket so) {
 		GameCenterUI.trackRunState("Client Thread created");
-		this.so = so;
+		this.so = so; // Zuweisen des Sockets, über welchen die Kommunikation mit dem Client (also der
+						// App) läuft
 	}
 
 	@Override
 	public void run() {
 		GameCenterUI.trackRunState("Client Thread running");
-		GameCenterUI.clientCount++;
-		GameCenterUI.updateClientCount();
+		GameCenterUI.clientCount++; // Hochzählen der Anzahl verbundener Clients in der GUI
+		GameCenterUI.updateClientCount(); // Aktualisieren des Labels, welches die Anzahl verbundener Clients anzeigt
 
-		showStartUpAnimation();
-		sendToSerialPort(new Matrix(matrix), identifier);
+		showStartUpAnimation(); // "Anmeldebildschirm" anzeigen (Power-Symbol, Bild liegt als Excel in der
+								// Dropbox)
+		sendToSerialPort(new Matrix(matrix)); // Erstellen eines neuen Matrix-Objekts mit dem lokalen
+												// int[14][14][3]-Array und übermitteln an den seriellen Port
 
-//		new Thread(new KeepAlive(so, this)).start();
-
-		while (clientConnected) {
-			waitForInput();
+		while (clientConnected) { // Schleife ausführen solange der Client verbunden ist
+			waitForInput(); // Auf Interaktionscodes vom Client warten
 		}
 	}
 
 	private void waitForInput() {
 		try {
-			InputStream in = so.getInputStream();
-			int input = in.read();
-			GameCenterUI.trackLastKeystroke(input);
-			switch (input) {
+			InputStream in = so.getInputStream(); // InputStream vom Socket holen
+			int input = in.read(); // in.read() = blockender Aufruf --> wartet bis Daten vorliegen --> Dann Daten
+									// einlesen --> liefert int zurück
+			GameCenterUI.trackLastKeystroke(input); // Anzeigen des Interaktionscodes auf der GUI --> Zum
+													// Troubleshooting
+			switch (input) { // switch-case Statement auf den Interaktionscode
 			case -1:
 			case 0:
-				clientConnected = false;
-				GameCenterUI.clientCount--;
-				GameCenterUI.updateClientCount();
-				clearBoard();
+				clientConnected = false; // Wenn input = -1 oder 0 --> Client nicht mehr verbunden --> boolean für
+											// Schleifenbedingung in run() auf false setzen
+				GameCenterUI.clientCount--; // Anzahl verbundener Clients runterzählen
+				GameCenterUI.updateClientCount(); // Aktualisieren des Labels, welches die Anzahl verbundener Clients
+													// anzeigt
+				clearBoard(); // Alle LEDs ausschalten
 				break;
 
 			case 1: // start Snake
-				if (noGameStarted()) {
-					snake = new SnakeController();
-					SnakeController.running = true;
-					new Thread(snake).start();
+				if (noGameStarted()) { // Überprüfen, dass kein Spiel gestartet ist
+					snake = new SnakeController(); // Neues Snake-Spiel erstellen
+					SnakeController.running = true; // Status des Spiels auf laufend setzen
+					new Thread(snake).start(); // Spiele-Thread (und damit das Spiel) starten
 				}
 				break;
 
 			case 2: // Snake left
-				if (!snake.lastMoveRight) {
-					snake.left = true;
+				if (!snake.lastMoveRight) { // Überprüfen, dass die letzte Bewegung der Schlange nicht nach rechts war
+					snake.left = true; // setzen der Richtungsvariablen
 					snake.up = false;
 					snake.down = false;
 				}
 				break;
 
 			case 3: // Snake right
-				if (!snake.lastMoveLeft) {
-					snake.right = true;
+				if (!snake.lastMoveLeft) { // Überprüfen, dass die letzte Bewegung der Schlange nicht nach links war
+					snake.right = true; // setzen der Richtungsvariablen
 					snake.up = false;
 					snake.down = false;
 				}
 				break;
 
 			case 4: // Snake up
-				if (!snake.lastMoveDown) {
-					snake.up = true;
+				if (!snake.lastMoveDown) { // Überprüfen, dass die letzte Bewegung der Schlange nicht nach unten war
+					snake.up = true; // setzen der Richtungsvariablen
 					snake.right = false;
 					snake.left = false;
 				}
 				break;
 
 			case 5: // Snake down
-				if (!snake.lastMoveUp) {
-					snake.down = true;
+				if (!snake.lastMoveUp) { // Überprüfen, dass die letzte Bewegung der Schlange nicht nach oben war
+					snake.down = true; // setzen der Richtungsvariablen
 					snake.right = false;
 					snake.left = false;
 				}
 				break;
 
-			case 6:
+			case 6: // neu Starten von Snake (funktioniert noch nicht wirklich)
 				SnakeController.running = false;
 				snake = null;
 				snake = new SnakeController();
 				SnakeController.running = true;
 				new Thread(snake).start();
 				break;
-				
+
 			case 7: // end Snake
-				SnakeController.running = false;
-				snake = null;
-				showStartUpAnimation();
-				sendToSerialPort(new Matrix(matrix), identifier);
+				SnakeController.running = false; // Status des Spiels auf beendet setzen
+				snake = null; // Snake auf NULL setzen --> Freigabe des Speichers durch Garbage-Collector
+				showStartUpAnimation(); // Berechnen des "Anmeldebildschirms" (Power-Symbol)
+				sendToSerialPort(new Matrix(matrix)); // Senden der Matrix an seriellen Thread
 				break;
 
 			case 20: // start Tetris
@@ -158,10 +161,10 @@ public class ClientThread implements Runnable {
 				break;
 
 			case 40: // start Tic Tac Toe
-				if (noGameStarted()) {
-					ttt = new TTTController();
-					TTTController.running = true;
-					new Thread(ttt).start();
+				if (noGameStarted()) { // Überprüfen, dass kein Spiel gestartet ist
+					ttt = new TTTController(); // neues TicTacToe-Spiel erstellen
+					TTTController.running = true; // Status des Spiels auf laufend setzen
+					new Thread(ttt).start(); // Spiele-Thread (und damit das Spiel) starten
 				}
 				break;
 
@@ -182,21 +185,21 @@ public class ClientThread implements Runnable {
 			case 48: // TTT [2][3]
 
 			case 49: // TTT [3][3]
-				ttt.setUserInput(input);
+				ttt.setUserInput(input); // für Codes 41-49 Eingabe an Spiel übermitteln
 				break;
 
-			case 50: //reset game
-				endGame(TTTController.class);
-				ttt = new TTTController();
-				TTTController.running = true;
-				new Thread(ttt).start();
+			case 50: // reset game
+				endGame(TTTController.class); // laufendes Spiel beenden
+				ttt = new TTTController(); // neues TicTacToe-Spiel erstellen
+				TTTController.running = true; // Status des Spiels auf laufend setzen
+				new Thread(ttt).start(); // Spiele-Thread (und damit das Spiel) starten
 				break;
-				
+
 			case 51: // end Tic Tac Toe
-				TTTController.running = false;
-				ttt = null;
-				showStartUpAnimation();
-				sendToSerialPort(new Matrix(matrix), identifier);
+				TTTController.running = false; // Status des Spiels auf beendet setzen
+				ttt = null; // TTT auf NULL setzen --> Freigabe des Speichers durch Garbage-Collector
+				showStartUpAnimation(); // Berechnen des "Anmeldebildschirms" (Power-Symbol)
+				sendToSerialPort(new Matrix(matrix)); // Senden der Matrix an seriellen Thread
 				break;
 
 			case 60: // start Pac Man
@@ -246,9 +249,9 @@ public class ClientThread implements Runnable {
 				PongController.running = false;
 				pong = null;
 				break;
-				
+
 			case 101:
-				shutDownAll();
+				shutDownAll(); // Beenden laufender Spiele und zurücksetzen der seriellen Verbindung
 				break;
 
 			default:
@@ -260,11 +263,14 @@ public class ClientThread implements Runnable {
 	}
 
 	private void shutDownAll() {
+		// Alle Spiele auf beendet setzen und Instanz auf NULL setzen --> Freigabe des
+		// Speichers durch Garbage-Collector
 		SnakeController.running = false;
 		snake = null;
 		TTTController.running = false;
 		if (TTTController.running) {
-			ttt.setUserInput(41);
+			ttt.setUserInput(66); // TTT nicht zeitbasiert, sondern rundenbasiert --> Durchführen eines Zuges
+									// notwendig, damit Spielabbruchbedingung überprüft werden kann
 		}
 		ttt = null;
 		TetrisController.running = false;
@@ -272,24 +278,27 @@ public class ClientThread implements Runnable {
 		PacManController.running = false;
 		pong = null;
 		PongController.running = false;
-		
-		GameCenter.serialConnection.forceReset = true;
-		sendToSerialPort(new Matrix(matrix), 0);
+
+		GameCenter.serialConnection.forceReset = true; // forceReset des SerialThreads auf true setzen --> nach nächstem
+														// übermittelten Datensatz läuft Thread zu Ende
+		sendToSerialPort(new Matrix(matrix)); // erneutes Senden einer Matrix, damit Schleifen Kopf im SerialThread
+												// erreicht werden kann
 		try {
-			Thread.sleep(30);
+			Thread.sleep(30); // Vor weiteren Befehlen 30ms warten
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		GameCenter.serialConnection.reset();
-		GameCenter.serialConnection = null;
-		GameCenter.serialConnection = new SerialThread();
-		new Thread(GameCenter.serialConnection).start();
-		
+		GameCenter.serialConnection.reset(); // Reset-Methode von SerialThread rufen --> Schließen aller Sockets und
+												// Ports
+		GameCenter.serialConnection = null; // SerialThread auf NULL setzen --> Freigabe von Speicher durch GC
+		GameCenter.serialConnection = new SerialThread(); // neuen SerialThread erstellen
+		new Thread(GameCenter.serialConnection).start(); // den neuen SerialThread starten
+
 //		showStartUpAnimation();
 //		sendToSerialPort(new Matrix(matrix), identifier);
 	}
-	
-	private boolean noGameStarted() {
+
+	private boolean noGameStarted() { // Überprüfen, ob eines der Spiele läuft --> wenn ja = true, sonst = false
 		if (SnakeController.running || TetrisController.running || TTTController.running || PacManController.running
 				|| PongController.running) {
 			return false;
@@ -298,49 +307,28 @@ public class ClientThread implements Runnable {
 		}
 	}
 
-	public static void sendToSerialPort(Matrix matrix, int identifier) {
+	public static void sendToSerialPort(Matrix matrix) {
 		try {
-			Socket socket = new Socket("127.0.0.1", SerialThread.internalConnectivityPort);
-			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-			out.writeObject(matrix);
-			out.close();
-			socket.close();
+			Socket socket = new Socket("127.0.0.1", SerialThread.internalConnectivityPort); // Bei jeder Übermittlung
+																							// neuen Socket erstellen;
+																							// Verbindung auf Localhost
+																							// und vom SerialThread
+																							// vorgegebenen Port
+			ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); // OutputStream von Socket holen
+																						// und daraus ObjectOutputStream
+																						// erstellen
+			out.writeObject(matrix); // Matrix-Objekt über Socket an SerialThread senden
+			out.close(); // ObjectOutputStream schließen
+			socket.close(); // Socket schließen
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		boolean sendPermissionGranted = false;
-//		if (identifier != 0) {
-//			if (identifier == 1) {
-//				if (ttt != null) {
-//					sendPermissionGranted = true;
-//				}
-//			} else if (identifier == 2) {
-//				if (snake != null) {
-//					sendPermissionGranted = true;
-//				}
-//			} else if (identifier == 3) {
-//				
-//			}
-//		} else {
-//			sendPermissionGranted = true;
-//		}
-//		if (sendPermissionGranted) {
-//			try {
-//				Socket socket = new Socket("127.0.0.1", SerialThread.internalConnectivityPort);
-//				ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-//				out.writeObject(matrix);
-//				out.close();
-//				socket.close();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static void endGame(Class instance) {
+	public static void endGame(Class instance) { // Jeweiliges Spiel beenden (abhängig von übergebenem Parameter)
 		if (instance.isInstance(SnakeController.class)) {
 			snake = null;
 		}
@@ -358,26 +346,31 @@ public class ClientThread implements Runnable {
 		}
 	}
 
-	public boolean isConnected() {
+	public boolean isConnected() { // Verbindungsstatus zurückgeben
 		return clientConnected;
 	}
 
-	public void setConnection(boolean updateConnection) {
+	public void setConnection(boolean updateConnection) { // Verbindungsstatus setzen
 		clientConnected = updateConnection;
 	}
 
-	private void showStartUpAnimation() {
-		int colorValue = new Random().nextInt(3);
-		short hue = (short) (new Random().nextInt(200) + 50);
+	private void showStartUpAnimation() { // Berechnen des Power-Symbols
+		int colorValue = new Random().nextInt(3); // Zufällige Zahl von 0 bis 2, um festzulegen, welche Farbe das
+													// Power-Symbol hat
+		short hue = (short) (new Random().nextInt(200) + 50); // Hauptfarbintensität berechnen (Ergebnis = Wert zwischen
+																// 0 und 249)
 
-		for (int i = 0; i < 14; i++) {
+		for (int i = 0; i < 14; i++) { // Iterieren über matrix mit 3 Schleifen (1 Schleife pro Dimension)
 			for (int j = 0; j < 14; j++) {
 				for (int k = 0; k < 3; k++) {
-					matrix[i][j][k] = 0;
+					matrix[i][j][k] = 0; // RGB Werte aller LEDs auf 0 setzen
 				}
 			}
 		}
 
+		// Berechnen der Farbintensität für die einzelnen anzusteuerunden LEDs
+		// (Power-Symbol hat keine einheitliche Farbintensität, sondern jedes Pixel hat
+		// eine von der Hauptfarbintensität abweichende Helligkeit
 		matrix[12][4][colorValue] = shiftColor(hue);
 		matrix[12][5][colorValue] = shiftColor(hue);
 		matrix[12][6][colorValue] = shiftColor(hue);
@@ -453,22 +446,24 @@ public class ClientThread implements Runnable {
 
 	private short shiftColor(short hue) {
 		Random rand = new Random();
-		if (rand.nextInt(2) == 0) {
-			hue += (short) (rand.nextInt(255 - (hue - 50)) * 0.8);
+		if (rand.nextInt(2) == 0) { // Überprüfen ob zufällige Zahl von 0 bis 1 gleich 0 ist oder nicht
+			hue += (short) (rand.nextInt(255 - (hue - 50)) * 0.8); // Wenn ja --> höhere Farbintensität --> heller
 		} else {
-			hue -= (short) (rand.nextInt(200 - (hue - 50)) * 0.8);
+			hue -= (short) (rand.nextInt(200 - (hue - 50)) * 0.8); // Wenn nein --> niedrigere Farbintensität -->
+																	// dunkler
 		}
-		return hue;
+		return hue; // Zurücliefern des Helligkeitswertes
 	}
 
-	private void clearBoard() {
+	private void clearBoard() { // Iterieren über matrix mit 3 Schleifen (1 Schleife pro Dimension)
 		for (int i = 0; i < 14; i++) {
 			for (int j = 0; j < 14; j++) {
 				for (int k = 0; k < 3; k++) {
-					matrix[i][j][k] = 0;
+					matrix[i][j][k] = 0; // RGB Werte aller LEDs auf 0 setzen
 				}
 			}
 		}
-		sendToSerialPort(new Matrix(matrix), identifier);
+		sendToSerialPort(new Matrix(matrix)); // erneutes Senden einer Matrix, damit Schleifen Kopf im SerialThread
+												// erreicht werden kann
 	}
 }

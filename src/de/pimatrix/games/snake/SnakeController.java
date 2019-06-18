@@ -17,8 +17,6 @@ public class SnakeController implements Runnable {
 
 	private short length = 3;
 	private short[] apple = new short[5];
-	
-	private int identifier = 2;
 
 	JOptionPane pane = new JOptionPane();
 
@@ -155,7 +153,7 @@ public class SnakeController implements Runnable {
 			}
 		}
 		Matrix matrixData = new Matrix(matrix);
-		ClientThread.sendToSerialPort(matrixData, identifier);
+		ClientThread.sendToSerialPort(matrixData);
 
 		running = false;
 	}
@@ -182,6 +180,6 @@ public class SnakeController implements Runnable {
 			}
 		}
 		Matrix matrixData = new Matrix(matrix);
-		ClientThread.sendToSerialPort(matrixData, identifier);
+		ClientThread.sendToSerialPort(matrixData);
 	}
 }
